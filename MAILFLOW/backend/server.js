@@ -11,7 +11,7 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cors({
-  origin: (process.env.FRONTEND_URL || 'http://localhost:5173').split(',').map(v => v.trim()),
+  origin: (process.env.FRONTEND_URL || 'https://mailflow-frontend-wb9l.onrender.com/').split(',').map(v => v.trim()),
   credentials: true
 }));
 app.use(express.json({ limit: '2mb' }));
