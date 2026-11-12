@@ -40,7 +40,7 @@ function Login({onLogin}) {
   const [email,setEmail]=useState('admin@mailflow.local'),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
   const submit=async e=>{e.preventDefault();setBusy(true);setError('');try{await onLogin(email,password)}catch(err){setError(err.response?.data?.message||'Unable to connect to the server.')}finally{setBusy(false)}};
   return <div className="login-screen"><div className="login-card"><div className="brand login-brand"><div className="brand-mark"><Send size={18}/></div><span>mailflow<span className="brand-dot">.</span></span></div><div className="eyebrow">YOUR COMMUNICATION WORKSPACE</div><h1>Good to see you<span>.</span></h1><p className="muted">Sign in to manage your campaigns and reach your audience.</p><form onSubmit={submit}><label>Admin email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/><label>Password</label><input type="password" value={password} onChange={e=>setPassword(e.target.value)} required placeholder="Enter your password"/>{error&&<div className="error-note">{error}</div>}<button className="primary-button full" disabled={busy}>{busy?<LoaderCircle className="spin" size={17}/>:null} Sign in to workspace <ArrowUpRight size={17}/></button></form><div className="login-foot">Secure administrator access · MAILFLOW  <p>usermail: admin@gmail.com</p>
-          <p>Passowrd: Password123</p></div></div></div>;
+          <p>Passowrd: Password123</p> </div></div></div>;
 }
 function PageHeading({eyebrow,title,description,action}) {return <div className="page-heading"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{action}</div>}
 function Dashboard() {
