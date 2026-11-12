@@ -1,34 +1,51 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-let transporter;
-function getTransporter() {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error('SMTP is not configured. Add SMTP_HOST, SMTP_USER and SMTP_PASS to backend environment variables.');
+let resend;
+
+function getResendClient() {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is missing in environment variables.');
   }
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: String(process.env.SMTP_SECURE).toLowerCase() === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
+
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
   }
-  return transporter;
+
+  return resend;
 }
 
 export async function sendOne({ to, subject, body }) {
-  const mailer = getTransporter();
-  return mailer.sendMail({
-    from: process.env.MAIL_FROM || process.env.SMTP_USER,
+  const client = getResendClient();
+
+  const html = body
+    .split(/\r?\n/)
+    .map(line => `<p>${escapeHtml(line)}</p>`)
+    .join('');
+
+  const { data, error } = await client.emails.send({
+    from: process.env.MAIL_FROM || 'MAILFLOW <onboarding@resend.dev>',
     to,
     subject,
     text: body,
-    html: body.split('\\n').map(line => `<p>${escapeHtml(line)}</p>`).join('')
+    html
   });
+
+  if (error) {
+    console.error('Resend email error:', error);
+    throw new Error(error.message || 'Email sending failed');
+  }
+
+  console.log(`Email sent successfully to ${to}. ID: ${data.id}`);
+
+  return data;
 }
 
 function escapeHtml(value) {
   return value.replace(/[&<>"']/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
   }[char]));
 }
